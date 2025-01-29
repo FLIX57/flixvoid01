@@ -1,0 +1,166 @@
+-- coded by flix
+
+--// Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Http = game:GetService("HttpService")
+local TPS = game:GetService("TeleportService")
+local Api = "https://games.roblox.com/v1/games/"
+local RepStor = game:GetService("ReplicatedStorage")
+
+--// Variables
+local Library = require(RepStor.Library)
+local HRP = LocalPlayer.Character.HumanoidRootPart
+local saveMod = require(RepStor.Library.Client.Save)
+local BreakMod = require(RepStor.Library.Client.BreakableCmds)
+function getInfo(name) return saveMod.Get()[name] end 
+
+--// Functions
+local _place,_id = game.PlaceId, game.JobId
+local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=10"
+function ListServers(cursor)
+	local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
+	return Http:JSONDecode(Raw)
+end
+
+local function serverhop()
+	print("Not worth to spin. Server hopping.")
+
+	LocalPlayer.Character.HumanoidRootPart.Anchored = true
+	local Servers = ListServers()
+	local Server = Servers.data[math.random(1,#Servers.data)]
+	TPS:TeleportToPlaceInstance(_place, Server.id, LocalPlayer)
+end
+
+local function checkwheel()
+	local wheelCore = LocalPlayer.PlayerGui["_MACHINES"].SpinnyWheel.Frame.Wheel.WheelCore
+	
+	local spin = false
+	
+	for i,v in pairs(wheelCore:GetDescendants()) do
+		if v:IsA("ImageLabel") and v.Image == "rbxassetid://15058306840" or v:IsA("ImageLabel") and v.Image == "rbxassetid://17515613028" then
+			print("Spinning is worth to do it. Spinning...")
+			spin = true
+		end
+	end
+	
+	
+	if spin then 
+		local args = {
+			[1] = "VoidWheel"
+		}
+		
+		game:GetService("ReplicatedStorage").Network:FindFirstChild("Spinny Wheel: Request Spin"):InvokeServer(unpack(args))
+		checkwheel()
+	else
+		wait(1)
+		serverhop()
+	end
+end
+
+local voidTickets = 0 -- Varsayılan değer
+local function updateVoidTickets()
+	voidTickets = 0 -- Önce sıfırla
+	for i, v in pairs(getInfo("Inventory").Misc) do
+		if v.id == "Void Spinny Wheel Ticket" then
+			voidTickets = (v._am or 0)
+		end
+	end
+end
+
+updateVoidTickets() -- İlk değer alma işlemi
+
+local diamondsStat = LocalPlayer:FindFirstChild("leaderstats") and LocalPlayer.leaderstats:FindFirstChild("💎 Diamonds")
+
+--// Functions
+local function createUI()
+	local mainUI = Instance.new("ScreenGui")
+	mainUI.Parent = LocalPlayer:FindFirstChild("PlayerGui")
+	mainUI.IgnoreGuiInset = true
+
+	local backgroundFrame = Instance.new("Frame")
+	backgroundFrame.Parent = mainUI
+	backgroundFrame.BackgroundColor3 = Color3.new(0,0,0)
+	backgroundFrame.BackgroundTransparency = 0.5
+	backgroundFrame.Size = UDim2.new(1,0,1,0)
+
+	local text1 = Instance.new("TextLabel")
+	text1.Parent = backgroundFrame
+	text1.BackgroundTransparency = 1
+	text1.TextColor3 = Color3.new(1,1,1)
+	text1.Size = UDim2.new(0.2,0,0.1,0)
+	text1.AnchorPoint = Vector2.new(0.5,0.5)
+	text1.Position = UDim2.new(0.5,0,0.3,0)
+	text1.TextScaled = true
+	text1.Text = ""..LocalPlayer.Name
+	text1.FontFace = Font.new(Font.fromEnum(Enum.Font.MontserratBlack).Family, Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+
+	local text2 = Instance.new("TextLabel")
+	text2.Parent = backgroundFrame
+	text2.BackgroundTransparency = 1
+	text2.TextColor3 = Color3.new(1,1,1)
+	text2.Size = UDim2.new(0.5,0,0.1,0)
+	text2.AnchorPoint = Vector2.new(0.5,0.5)
+	text2.Position = UDim2.new(0.5,0,0.7,0)
+	text2.TextScaled = true
+	text2.Text = "Diamonds: " .. string.format("%.1fM", diamondsStat.Value / 1000000)
+	text2.FontFace = Font.new(Font.fromEnum(Enum.Font.MontserratBlack).Family, Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+
+	local text3 = Instance.new("TextLabel")
+	text3.Parent = backgroundFrame
+	text3.BackgroundTransparency = 1
+	text3.TextColor3 = Color3.new(1,1,1)
+	text3.Size = UDim2.new(0.5,0,0.1,0)
+	text3.AnchorPoint = Vector2.new(0.5,0.5)
+	text3.Position = UDim2.new(0.5,0,0.9,0)
+	text3.TextScaled = true
+	text3.Text = "Void Tickets: " .. voidTickets
+	text3.FontFace = Font.new(Font.fromEnum(Enum.Font.MontserratBlack).Family, Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+
+	local UIStroke1 = Instance.new("UIStroke")
+	UIStroke1.Thickness = 3
+	UIStroke1.Parent = text1
+	local UIStroke2 = Instance.new("UIStroke")
+	UIStroke2.Thickness = 3
+	UIStroke2.Parent = text2
+	local UIStroke3 = Instance.new("UIStroke")
+	UIStroke3.Thickness = 3
+	UIStroke3.Parent = text3
+
+	local ImageLabel1 = Instance.new("ImageLabel")
+	ImageLabel1.Image = "rbxassetid://15058306840"
+	ImageLabel1.Size = UDim2.new(0.15,0,0.15,0)
+	ImageLabel1.BackgroundTransparency = 1
+	ImageLabel1.ScaleType = "Fit"
+	ImageLabel1.AnchorPoint = Vector2.new(0.5,0.5)
+	ImageLabel1.Parent = backgroundFrame
+	ImageLabel1.Position = UDim2.new(0.5,0,0.6,0)
+
+	local ImageLabel2 = Instance.new("ImageLabel")
+	ImageLabel2.Image = "rbxassetid://17496073736"
+	ImageLabel2.AnchorPoint = Vector2.new(0.5,0.5)
+	ImageLabel2.BackgroundTransparency = 1
+	ImageLabel2.Size = UDim2.new(0.15,0,0.15,0)
+	ImageLabel2.ScaleType = "Fit"
+	ImageLabel2.Parent = backgroundFrame
+	ImageLabel2.Position = UDim2.new(0.5,0,0.8,0)
+
+	-- Update text when diamond value changes
+	diamondsStat:GetPropertyChangedSignal("Value"):Connect(function()
+		text2.Text = "Diamonds: " .. string.format("%.1fM", diamondsStat.Value / 1000000)
+	end)
+
+	-- Void tickets güncellemesi için sürekli kontrol
+	task.spawn(function()
+		while task.wait(1) do -- Her 1 saniyede bir kontrol
+			local oldValue = voidTickets
+			updateVoidTickets()
+			if oldValue ~= voidTickets then
+				text3.Text = "Void Tickets: " .. voidTickets
+			end
+		end
+	end)
+end
+
+createUI()
+checkwheel()
