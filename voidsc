@@ -23,6 +23,7 @@ function ListServers(cursor)
 	return Http:JSONDecode(Raw)
 end
 
+
 local function serverhop()
 	print("Not worth to spin. Server hopping.")
 
@@ -33,7 +34,8 @@ local function serverhop()
 end
 
 local function checkwheel()
-	local wheelCore = LocalPlayer.PlayerGui["_MACHINES"].SpinnyWheel.Frame.Wheel.WheelCore
+	
+	local wheelCore = game.Workspace.Map3["200 | Void Spawn"].INTERACT.Machines.SpinnyWheel.SpinnyWheel.SurfaceGui.Wheel.WheelCore
 	
 	local spin = false
 	
@@ -51,7 +53,6 @@ local function checkwheel()
 		}
 		
 		game:GetService("ReplicatedStorage").Network:FindFirstChild("Spinny Wheel: Request Spin"):InvokeServer(unpack(args))
-		checkwheel()
 	else
 		wait(1)
 		serverhop()
@@ -75,6 +76,7 @@ local diamondsStat = LocalPlayer:FindFirstChild("leaderstats") and LocalPlayer.l
 --// Functions
 local function createUI()
 	local mainUI = Instance.new("ScreenGui")
+	mainUI.DisplayOrder = 25
 	mainUI.Parent = LocalPlayer:FindFirstChild("PlayerGui")
 	mainUI.IgnoreGuiInset = true
 
@@ -161,6 +163,59 @@ local function createUI()
 		end
 	end)
 end
+
+
+function SendMessageEMBED(url, embed)
+	local http = game:GetService("HttpService")
+	local headers = {
+		["Content-Type"] = "application/json"
+	}
+	local data = {
+		["embeds"] = {
+			{
+				["title"] = embed.title,
+				["description"] = embed.description,
+				["color"] = embed.color,
+				["fields"] = embed.fields,
+				["footer"] = {
+					["text"] = embed.footer.text
+				}
+			}
+		}
+	}
+	local body = http:JSONEncode(data)
+	local response = request({
+		Url = url,
+		Method = "POST",
+		Headers = headers,
+		Body = body
+	})
+	print("Sent")
+end
+
+
+--Examples 
+
+local url = webhookurl
+
+local embed = {
+	["title"] = "Void Ticket Status",
+	["color"] = 65280,
+	["fields"] = {
+		{
+			["name"] = "Total Diamonds",
+			["value"] = "Diamonds: " .. string.format("%.1fM", diamondsStat.Value / 1000000)
+		},
+		{
+			["name"] = "Total Void Tickets",
+			["value"] = voidTickets
+		}
+	},
+	["footer"] = {
+		["text"] = "made by flix :)"
+	}
+}
+SendMessageEMBED(url, embed)
 
 createUI()
 checkwheel()
